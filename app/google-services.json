@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "140893055498",
+    "project_id": "tinago-cecf6",
+    "storage_bucket": "tinago-cecf6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:140893055498:android:81013be3c1fb72b9ae0df3",
+        "android_client_info": {
+          "package_name": "com.gtemedia.tinago"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKBVQdRFSbv6RqHFENaadt4g6pxBVA7ks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ReportTheftActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/report_vehicle_theft"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="32dp"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/textViewReportingLicensePlate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/reporting_theft_for_license_plate_placeholder"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/rounded_textview_background"
+            android:padding="12dp"/>
+
+        <EditText
+            android:id="@+id/editTextTheftDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/date_of_theft_tap_to_select"
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="true"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_box_background"/>
+
+        <EditText
+            android:id="@+id/editTextTheftLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/location_of_theft_e_g_address_intersection"
+            android:inputType="textPostalAddress"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_box_background"/>
+
+        <EditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/detailed_description_of_theft_e_g_circumstances_distinguishing_marks"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:gravity="top"
+            android:padding="12dp"
+            android:layout_marginBottom="32dp"
+            android:background="@drawable/rounded_box_background"/>
+
+        <Button
+            android:id="@+id/buttonFileTheftReport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/file_theft_report"
+            android:textSize="18sp"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:textColor="@android:color/white"/>
+
+        <Button
+            android:id="@+id/buttonCancelReport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:textSize="16sp"
+            android:padding="10dp"
+            android:backgroundTint="@android:color/darker_gray"
+            android:textColor="@android:color/white"/>
+
+    </LinearLayout>
+</ScrollView>

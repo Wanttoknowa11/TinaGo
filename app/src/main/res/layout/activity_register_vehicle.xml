@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp"
+    tools:context=".RegisterVehicleActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/register_vehicle"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"
+        android:textColor="@android:color/black"/>
+
+    <EditText
+        android:id="@+id/licensePlateEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/license_plate"
+        android:inputType="textCapCharacters"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_box_background"/>
+
+    <EditText
+        android:id="@+id/makeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/vehicle_make"
+        android:inputType="textCapWords"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_box_background"/>
+
+    <EditText
+        android:id="@+id/modelEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/vehicle_model"
+        android:inputType="textCapWords"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/rounded_box_background"/>
+
+    <Button
+        android:id="@+id/registerVehicleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/generate_qr_code"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="@color/design_default_color_primary"
+        android:textColor="@android:color/white"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/qrCodeImageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/qr_code_image_description"/>
+
+    <TextView
+        android:id="@+id/qrCodeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:visibility="gone"
+        android:textColor="@android:color/black"/>
+
+</LinearLayout>
