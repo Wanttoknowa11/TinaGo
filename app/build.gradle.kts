@@ -60,11 +60,16 @@ dependencies {
     // Add the Firebase SDK for Storage (if you need to store images/files)
     implementation(libs.firebase.storage.ktx)
 
+    implementation (libs.circleimageview)
+
+    implementation(platform(libs.firebase.bom.v3300)) // Use the latest BOM version
+    implementation(libs.google.firebase.messaging.ktx) // For Kotlin extensions
+
     // ZXing Android Embedded (for QR Code Scanning)
     implementation(libs.zxing.android.embedded)
     implementation(libs.core) // Make sure to use a compatible core version
 
-
+    implementation (libs.zxing.android.embedded)
     // Add other necessary libraries for networking (Retrofit) and JSON serialization
     implementation(libs.retrofit)
     implementation(libs.converter.gson) // Or converter-kotlinx-serialization

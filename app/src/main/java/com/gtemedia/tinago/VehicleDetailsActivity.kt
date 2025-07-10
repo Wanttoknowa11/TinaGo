@@ -1,208 +1,303 @@
 package com.gtemedia.tinago
 
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.LinearLayout
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue // Import FieldValue for server timestamps
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class VehicleDetailsActivity : AppCompatActivity() {
 
-    private lateinit var firestore: FirebaseFirestore
-    private lateinit var textViewDetailLicensePlate: TextView
-    private lateinit var textViewDetailStatus: TextView
-    private lateinit var textViewDetailMake: TextView
-    private lateinit var textViewDetailModel: TextView
-    private lateinit var textViewDetailOwnerUid: TextView // Hidden TextView for owner UID
-    private lateinit var layoutReportDetails: LinearLayout // Layout for theft report details
-    private lateinit var textViewReportDate: TextView
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
+
+    private lateinit var imageViewVehicle: ImageView
+    private lateinit var textViewLicensePlate: TextView
+    private lateinit var textViewVIN: TextView
+    private lateinit var textViewMakeModel: TextView
+    private lateinit var textViewType: TextView
+    private lateinit var textViewRegistrationDate: TextView
+    private lateinit var textViewCurrentStatus: TextView
+    private lateinit var textViewReportDetails: TextView
     private lateinit var textViewTheftDate: TextView
     private lateinit var textViewTheftLocation: TextView
-    private lateinit var textViewReportDescription: TextView
+    private lateinit var textViewDescription: TextView
+    private lateinit var buttonReportTheft: Button
     private lateinit var buttonMarkAsRecovered: Button
-    private lateinit var textViewMessage: TextView
+    private lateinit var buttonBack: Button
 
-    // Variable to hold the license plate passed to this activity
-    private var currentLicensePlate: String? = null
+    private var vehicleId: String? = null
+    private var licensePlate: String? = null
+    private var currentVehicleStatus: String? = null
+
+    private val TAG = "VehicleDetailsActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_vehicle_details)
 
-        firestore = FirebaseFirestore.getInstance()
+        // Initialize Firebase
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+
+        // Get vehicle ID and license plate from intent
+        vehicleId = intent.getStringExtra("vehicleId")
+        licensePlate = intent.getStringExtra("licensePlate")
 
         // Initialize UI elements
-        textViewDetailLicensePlate = findViewById(R.id.textViewDetailLicensePlate)
-        textViewDetailStatus = findViewById(R.id.textViewDetailStatus)
-        textViewDetailMake = findViewById(R.id.textViewDetailMake)
-        textViewDetailModel = findViewById(R.id.textViewDetailModel)
-        textViewDetailOwnerUid = findViewById(R.id.textViewDetailOwnerUid)
-        layoutReportDetails = findViewById(R.id.layoutReportDetails)
-        textViewReportDate = findViewById(R.id.textViewReportDate)
+        imageViewVehicle = findViewById(R.id.imageViewVehicle)
+        textViewLicensePlate = findViewById(R.id.textViewLicensePlate)
+        textViewVIN = findViewById(R.id.textViewVIN)
+        textViewMakeModel = findViewById(R.id.textViewMakeModel)
+        textViewType = findViewById(R.id.textViewType)
+        textViewRegistrationDate = findViewById(R.id.textViewRegistrationDate)
+        textViewCurrentStatus = findViewById(R.id.textViewCurrentStatus)
+        textViewReportDetails = findViewById(R.id.textViewReportDetails)
         textViewTheftDate = findViewById(R.id.textViewTheftDate)
         textViewTheftLocation = findViewById(R.id.textViewTheftLocation)
-        textViewReportDescription = findViewById(R.id.textViewReportDescription)
+        textViewDescription = findViewById(R.id.textViewDescription)
+        buttonReportTheft = findViewById(R.id.buttonReportTheft)
         buttonMarkAsRecovered = findViewById(R.id.buttonMarkAsRecovered)
-        textViewMessage = findViewById(R.id.textViewMessage)
+        buttonBack = findViewById(R.id.buttonBack)
 
-        // Get the license plate from the Intent that started this activity
-        currentLicensePlate = intent.getStringExtra("SCANNED_LICENSE_PLATE")
-
-        if (currentLicensePlate != null) {
-            textViewDetailLicensePlate.text = getString(R.string.license_plate_display, currentLicensePlate) // Use string resource for dynamic text
-            fetchVehicleDetails(currentLicensePlate!!)
+        // Load vehicle details
+        if (vehicleId != null) {
+            loadVehicleDetails(vehicleId!!)
         } else {
-            textViewMessage.text = "Error: No license plate provided."
-            Toast.makeText(this, "Error: No license plate to query.", Toast.LENGTH_LONG).show()
-            Log.e("VehicleDetails", "No license plate received in Intent.")
+            Toast.makeText(this, "Vehicle ID not provided.", Toast.LENGTH_SHORT).show()
+            finish()
         }
 
-        // Set up listener for the "Mark As Recovered" button
+        buttonReportTheft.setOnClickListener {
+            val intent = Intent(this, ReportTheftActivity::class.java).apply {
+                putExtra("vehicleId", vehicleId)
+                putExtra("licensePlate", licensePlate)
+            }
+            startActivity(intent)
+        }
+
         buttonMarkAsRecovered.setOnClickListener {
-            currentLicensePlate?.let {
-                markVehicleAsRecovered(it)
-            } ?: run {
-                Toast.makeText(this, "No license plate to mark as recovered.", Toast.LENGTH_SHORT).show()
-            }
+            markVehicleAsRecovered()
+        }
+
+        buttonBack.setOnClickListener {
+            finish() // Go back to the previous activity (dashboard)
         }
     }
 
-    private fun fetchVehicleDetails(licensePlate: String) {
-        firestore.collection("vehicles").document(licensePlate)
-            .get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    val status = documentSnapshot.getString("status") ?: "N/A"
-                    val make = documentSnapshot.getString("make") ?: "N/A"
-                    val model = documentSnapshot.getString("model") ?: "N/A"
-                    val ownerUid = documentSnapshot.getString("ownerUid") ?: "N/A"
+    /**
+     * Loads vehicle details from Firestore and populates the UI.
+     * @param id The document ID of the vehicle in Firestore.
+     */
+    private fun loadVehicleDetails(id: String) {
+        db.collection("vehicles").document(id).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val vehicle = document.toObject(Vehicle::class.java)
+                    if (vehicle != null) {
+                        // Update the global licensePlate and currentVehicleStatus
+                        licensePlate = vehicle.licensePlate
+                        currentVehicleStatus = vehicle.currentStatus
 
-                    textViewDetailStatus.text = getString(R.string.status_display, status.replace("_", " ").capitalize()) // Use string resource, format status
-                    textViewDetailMake.text = getString(R.string.make_display, make) // Use string resource
-                    textViewDetailModel.text = getString(R.string.model_display, model) // Use string resource
-                    textViewDetailOwnerUid.text = getString(R.string.owner_uid_display, ownerUid) // Use string resource
+                        textViewLicensePlate.text = "License Plate: ${vehicle.licensePlate}"
+                        textViewVIN.text = "VIN: ${vehicle.vin}"
+                        textViewMakeModel.text = "Make: ${vehicle.make}, Model: ${vehicle.model}"
+                        textViewType.text = "Type: ${vehicle.type}"
 
-                    // Adjust status text color
-                    if (status == "reported_stolen") {
-                        textViewDetailStatus.setTextColor(getColor(android.R.color.holo_red_dark))
-                        fetchTheftReport(licensePlate) // Fetch report details if stolen
-                        buttonMarkAsRecovered.visibility = View.VISIBLE // Show recover button
-                    } else {
-                        textViewDetailStatus.setTextColor(getColor(android.R.color.holo_green_dark))
-                        layoutReportDetails.visibility = View.GONE // Hide report section if not stolen
-                        buttonMarkAsRecovered.visibility = View.GONE // Hide recover button
-                    }
-                } else {
-                    textViewMessage.text = "Vehicle '$licensePlate' not found."
-                    Toast.makeText(this, "Vehicle '$licensePlate' not found.", Toast.LENGTH_LONG).show()
-                    Log.w("VehicleDetails", "Vehicle document for '$licensePlate' does not exist.")
-                    // If vehicle not found, hide report details and button
-                    layoutReportDetails.visibility = View.GONE
-                    buttonMarkAsRecovered.visibility = View.GONE
-                }
-            }
-            .addOnFailureListener { e ->
-                textViewMessage.text = "Error loading vehicle details."
-                Toast.makeText(this, "Error loading vehicle details: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                Log.e("VehicleDetails", "Error fetching vehicle details for '$licensePlate'", e)
-            }
-    }
+                        val formattedDate = vehicle.registrationDate?.let {
+                            SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(it)
+                        } ?: "N/A"
+                        textViewRegistrationDate.text = "Registration Date: $formattedDate"
 
-    private fun fetchTheftReport(licensePlate: String) {
-        // Query the 'theft_reports' collection
-        firestore.collection("theft_reports")
-            .whereEqualTo("licensePlate", licensePlate)
-            .whereEqualTo("status", "reported") // Only get active 'reported' thefts
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    // Assuming only one active report per vehicle at a time
-                    val reportDocument = querySnapshot.documents[0]
-                    val reportDate = reportDocument.getTimestamp("reportDate")?.toDate()
-                    val theftDate = reportDocument.getString("theftDate") ?: "N/A"
-                    val theftLocation = reportDocument.getString("theftLocation") ?: "N/A"
-                    val description = reportDocument.getString("description") ?: "N/A"
+                        textViewCurrentStatus.text = "Status: ${vehicle.currentStatus?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}"
 
-                    val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-                    val formattedReportDate = reportDate?.let { dateFormat.format(it) } ?: "N/A"
+                        // Set status text color
+                        when (vehicle.currentStatus) {
+                            "stolen" -> textViewCurrentStatus.setTextColor(Color.RED)
+                            "recovered" -> textViewCurrentStatus.setTextColor(Color.parseColor("#006400")) // Dark Green
+                            else -> textViewCurrentStatus.setTextColor(Color.BLACK) // Default for "registered"
+                        }
 
+                        // Handle image loading (using a library like Glide or Picasso in a real app)
+                        // For now, a placeholder or default image is used in XML.
+                        // if (vehicle.imageUrl?.isNotEmpty() == true) {
+                        //     Glide.with(this).load(vehicle.imageUrl).into(imageViewVehicle)
+                        // }
 
-                    textViewReportDate.text = getString(R.string.report_date_display, formattedReportDate) // Use string resource
-                    textViewTheftDate.text = getString(R.string.theft_date_display, theftDate) // Use string resource
-                    textViewTheftLocation.text = getString(R.string.theft_location_display, theftLocation) // Use string resource
-                    textViewReportDescription.text = getString(R.string.description_display, description) // Use string resource
-                    layoutReportDetails.visibility = View.VISIBLE // Show the report details section
-                } else {
-                    // This case should ideally not happen if vehicle status is 'reported_stolen'
-                    Log.w("VehicleDetails", "Vehicle '$licensePlate' is stolen but no active report found.")
-                    textViewMessage.text = "Vehicle is stolen but no active report found."
-                    layoutReportDetails.visibility = View.GONE // Hide if no report
-                    buttonMarkAsRecovered.visibility = View.GONE // Hide if no report
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("VehicleDetails", "Error fetching theft report for '$licensePlate'", e)
-                Toast.makeText(this, "Error fetching theft report: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                layoutReportDetails.visibility = View.GONE // Hide on error
-                buttonMarkAsRecovered.visibility = View.GONE // Hide on error
-            }
-    }
+                        // Show/hide buttons based on vehicle status and user type
+                        updateButtonVisibility(vehicle.currentStatus)
 
-    private fun markVehicleAsRecovered(licensePlate: String) {
-        // 1. Update vehicle status to 'recovered'
-        firestore.collection("vehicles").document(licensePlate)
-            .update("status", "recovered")
-            .addOnSuccessListener {
-                Log.d("VehicleDetails", "Vehicle '$licensePlate' status updated to 'recovered'.")
-
-                // 2. Update the corresponding theft report status to 'resolved'
-                firestore.collection("theft_reports")
-                    .whereEqualTo("licensePlate", licensePlate)
-                    .whereEqualTo("status", "reported") // Find the active report
-                    .get()
-                    .addOnSuccessListener { querySnapshot ->
-                        if (!querySnapshot.isEmpty) {
-                            val batch = firestore.batch()
-                            querySnapshot.documents.forEach { document ->
-                                val reportRef = firestore.collection("theft_reports").document(document.id)
-                                batch.update(reportRef, mapOf(
-                                    "status" to "resolved",
-                                    "resolvedDate" to FieldValue.serverTimestamp() // Add resolution timestamp
-                                ))
-                            }
-                            batch.commit()
-                                .addOnSuccessListener {
-                                    Toast.makeText(this, "Vehicle recovered and report resolved!", Toast.LENGTH_LONG).show()
-                                    Log.d("VehicleDetails", "Theft report for '$licensePlate' resolved.")
-                                    // Refresh UI after update
-                                    fetchVehicleDetails(licensePlate)
-                                }
-                                .addOnFailureListener { e ->
-                                    Toast.makeText(this, "Error resolving report: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                                    Log.e("VehicleDetails", "Error resolving theft report for '$licensePlate'", e)
-                                }
-                        } else {
-                            Log.w("VehicleDetails", "No active theft report found to resolve for '$licensePlate'.")
-                            Toast.makeText(this, "Vehicle recovered, but no active report to resolve.", Toast.LENGTH_LONG).show()
-                            // Still refresh UI
-                            fetchVehicleDetails(licensePlate)
+                        // Load theft report details if the vehicle is stolen or recovered
+                        if (vehicle.currentStatus == "stolen" || vehicle.currentStatus == "recovered") {
+                            loadTheftReportDetails(id)
                         }
                     }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(this, "Error finding report to resolve: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                        Log.e("VehicleDetails", "Error finding theft report for '$licensePlate' to resolve", e)
+                } else {
+                    Toast.makeText(this, "Vehicle not found.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error loading vehicle details: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Log.e(TAG, "Error fetching vehicle document", e)
+                finish()
+            }
+    }
+
+    /**
+     * Updates the visibility of the "Report Theft" and "Mark as Recovered" buttons
+     * based on the vehicle's current status and the user's role.
+     * @param status The current status of the vehicle.
+     */
+    private fun updateButtonVisibility(status: String?) {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            db.collection("users").document(currentUser.uid).get()
+                .addOnSuccessListener { userDoc ->
+                    val userType = userDoc.getString("userType")
+                    val isOwner = userDoc.id == auth.currentUser?.uid // Simple check, more robust needed for shared vehicles
+
+                    when (status) {
+                        "registered" -> {
+                            buttonReportTheft.visibility = if (isOwner) View.VISIBLE else View.GONE
+                            buttonMarkAsRecovered.visibility = View.GONE
+                        }
+                        "stolen" -> {
+                            buttonReportTheft.visibility = View.GONE
+                            buttonMarkAsRecovered.visibility = if (userType == "authority") View.VISIBLE else View.GONE
+                            textViewReportDetails.visibility = View.VISIBLE
+                            textViewTheftDate.visibility = View.VISIBLE
+                            textViewTheftLocation.visibility = View.VISIBLE
+                            textViewDescription.visibility = View.VISIBLE
+                        }
+                        "recovered" -> {
+                            buttonReportTheft.visibility = View.GONE
+                            buttonMarkAsRecovered.visibility = View.GONE // Already recovered
+                            textViewReportDetails.visibility = View.VISIBLE
+                            textViewTheftDate.visibility = View.VISIBLE
+                            textViewTheftLocation.visibility = View.VISIBLE
+                            textViewDescription.visibility = View.VISIBLE
+                        }
+                        else -> {
+                            buttonReportTheft.visibility = View.GONE
+                            buttonMarkAsRecovered.visibility = View.GONE
+                        }
                     }
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error fetching user type for button visibility: ${e.localizedMessage}", e)
+                    // Default to hiding buttons on error
+                    buttonReportTheft.visibility = View.GONE
+                    buttonMarkAsRecovered.visibility = View.GONE
+                }
+        } else {
+            // User not logged in, hide all action buttons
+            buttonReportTheft.visibility = View.GONE
+            buttonMarkAsRecovered.visibility = View.GONE
+        }
+    }
+
+    /**
+     * Loads the theft report details for a given vehicle ID.
+     * @param vehicleId The ID of the vehicle.
+     */
+    private fun loadTheftReportDetails(vehicleId: String) {
+        db.collection("theft_reports")
+            .whereEqualTo("vehicleId", vehicleId)
+            .orderBy("reportDate", com.google.firebase.firestore.Query.Direction.DESCENDING) // Get the latest report
+            .limit(1)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val report = documents.documents[0].data
+                    if (report != null) {
+                        textViewReportDetails.visibility = View.VISIBLE
+                        textViewTheftDate.visibility = View.VISIBLE
+                        textViewTheftLocation.visibility = View.VISIBLE
+                        textViewDescription.visibility = View.VISIBLE
+
+                        val theftDate = report["theftDate"] as? com.google.firebase.Timestamp
+                        val formattedTheftDate = theftDate?.toDate()?.let {
+                            SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(it)
+                        } ?: "N/A"
+
+                        textViewTheftDate.text = "Theft Date: $formattedTheftDate"
+                        textViewTheftLocation.text = "Theft Location: ${report["theftLocation"] as? String ?: "N/A"}"
+                        textViewDescription.text = "Description: ${report["description"] as? String ?: "N/A"}"
+                    }
+                } else {
+                    Log.d(TAG, "No theft report found for vehicle ID: $vehicleId")
+                    textViewReportDetails.visibility = View.GONE
+                    textViewTheftDate.visibility = View.GONE
+                    textViewTheftLocation.visibility = View.GONE
+                    textViewDescription.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error loading theft report details: ${e.localizedMessage}", e)
+                Toast.makeText(this, "Error loading theft report details.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    /**
+     * Marks the current vehicle as "recovered" in Firestore.
+     * This function should only be callable by authority users.
+     */
+    private fun markVehicleAsRecovered() {
+        if (vehicleId == null) {
+            Toast.makeText(this, "Vehicle ID is missing.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Confirm with the user before marking as recovered
+        // In a real app, you might use a custom dialog instead of a simple Toast.
+        Toast.makeText(this, "Marking as recovered...", Toast.LENGTH_SHORT).show()
+
+        db.collection("vehicles").document(vehicleId!!)
+            .update("currentStatus", "recovered")
+            .addOnSuccessListener {
+                Toast.makeText(this, "Vehicle marked as recovered!", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "Vehicle $licensePlate marked as recovered.")
+                // Refresh UI or navigate back
+                loadVehicleDetails(vehicleId!!) // Reload details to reflect status change
+                // In a real app, a Cloud Function would trigger FCM to notify the owner.
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Error marking vehicle as recovered: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                Log.e("VehicleDetails", "Error updating vehicle status to 'recovered' for '$licensePlate'", e)
+                Log.e(TAG, "Error updating vehicle status to 'recovered' for '$licensePlate'", e)
             }
+    }
+
+    // Data class to represent a Vehicle (for Firestore mapping)
+    // This should ideally be in a separate file or a common data model package
+    data class Vehicle(
+        val id: String = "", // Document ID from Firestore
+        val ownerId: String = "",
+        val licensePlate: String = "",
+        val vin: String = "",
+        val make: String = "",
+        val model: String = "",
+        val type: String = "",
+        val registrationDate: Date? = null,
+        var currentStatus: String = "registered",
+        val imageUrl: String? = null,
+        val qrCodeUrl: String? = null,
+        // Fields for theft report, might be null if not stolen
+        val theftDate: Date? = null,
+        val theftLocation: String? = null,
+        val description: String? = null,
+        val reportDate: Date? = null
+    ) {
+        // No-argument constructor required for Firestore deserialization
+        constructor() : this("", "", "", "", "", "", "", null, "registered", null, null, null, null, null, null)
     }
 }

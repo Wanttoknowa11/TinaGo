@@ -13,7 +13,9 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="back_to_login">Back to Login</string>
 
-    <string name="welcome_citizen">Welcome, %1$s</string> <string name="welcome_authority">Welcome, %1$s (Authority)</string> <string name="logout">Logout</string>
+    <string name="welcome_citizen">Welcome, %1$s</string>
+    <string name="welcome_authority">Welcome, %1$s (Authority)</string>
+    <string name="logout">Logout</string>
     <string name="scan_qr_to_report">Scan QR to Report Theft</string>
     <string name="register_new_vehicle">Register New Vehicle</string>
     <string name="scan_qr_to_query_vehicle">Scan QR to Query Vehicle</string>
@@ -33,14 +35,38 @@
 
     <string name="report_vehicle_theft">Report Vehicle Theft</string>
     <string name="reporting_theft_for_license_plate_placeholder">Reporting Theft for: [License Plate]</string>
-    <string name="reporting_theft_for_license_plate">Reporting Theft for: %1$s</string> <string name="date_of_theft_tap_to_select">Date of Theft (Tap to select)</string>
+    <string name="reporting_theft_for_license_plate">Reporting Theft for: %1$s</string>
+    <string name="date_of_theft_tap_to_select">Date of Theft (Tap to select)</string>
     <string name="location_of_theft_e_g_address_intersection">Location of Theft (e.g., Address, Intersection)</string>
     <string name="detailed_description_of_theft_e_g_circumstances_distinguishing_marks">Detailed description of theft (e.g., circumstances, distinguishing marks)</string>
     <string name="file_theft_report">File Theft Report</string>
     <string name="cancel">Cancel</string>
 
     <string name="vehicle_details">Vehicle Details</string>
-    <string name="license_plate_n_a">License Plate: N/A</string> <string name="license_plate_display">License Plate: %1$s</string> <string name="status_n_a">Status: N/A</string> <string name="status_display">Status: %1$s</string> <string name="make_n_a">Make: N/A</string> <string name="make_display">Make: %1$s</string> <string name="model_n_a">Model: N/A</string> <string name="model_display">Model: %1$s</string> <string name="owner_uid_n_a">Owner UID: N/A</string> <string name="owner_uid_display">Owner UID: %1$s</string> <string name="theft_report_details">Theft Report Details</string>
-    <string name="report_date_n_a">Reported On: N/A</string> <string name="report_date_display">Reported On: %1$s</string> <string name="theft_date_n_a">Theft Date: N/A</string> <string name="theft_date_display">Theft Date: %1$s</string> <string name="theft_location_n_a">Location: N/A</string> <string name="theft_location_display">Location: %1$s</string> <string name="description_n_a">Description: N/A</string> <string name="description_display">Description: %1$s</string> <string name="mark_as_recovered">Mark As Recovered</string>
+    <string name="license_plate_n_a">License Plate: N/A</string>
+    <string name="license_plate_display">License Plate: %1$s</string>
+    <string name="status_n_a">Status: N/A</string>
+    <string name="status_display">Status: %1$s</string>
+    <string name="make_n_a">Make: N/A</string>
+    <string name="make_display">Make: %1$s</string>
+    <string name="model_n_a">Model: N/A</string>
+    <string name="model_display">Model: %1$s</string>
+    <string name="owner_uid_n_a">Owner UID: N/A</string>
+    <string name="owner_uid_display">Owner UID: %1$s</string>
+    <string name="theft_report_details">Theft Report Details</string>
+    <string name="report_date_n_a">Reported On: N/A</string>
+    <string name="report_date_display">Reported On: %1$s</string>
+    <string name="theft_date_n_a">Theft Date: N/A</string>
+    <string name="theft_date_display">Theft Date: %1$s</string>
+    <string name="theft_location_n_a">Location: N/A</string>
+    <string name="theft_location_display">Location: %1$s</string>
+    <string name="description_n_a">Description: N/A</string>
+    <string name="description_display">Description: %1$s</string>
+    <string name="mark_as_recovered">Mark As Recovered</string>
+    <string name="vehicle_vin">Vehicle VIN</string>
+    <string name="id">ID #</string>
+    <string name="upload_from_gallery">Upload from Gallery</string>
+    <string name="vehicle_type">Vehicle Type</string>
+    <string name="flash">Flash</string>
 
 </resources>

@@ -5,57 +5,64 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:padding="16dp"
+    android:padding="24dp"
+    android:background="#F5F5F5"
     tools:context=".AuthorityDashboardActivity">
 
     <TextView
-        android:id="@+id/welcomeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/welcome_authority"
-        android:textSize="24sp"
+        android:text="Authority Dashboard"
+        android:textSize="32sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp"
-        android:textColor="@android:color/black"/>
+        android:textColor="#333333"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="sans-serif-medium"/>
 
     <Button
-        android:id="@+id/buttonScanToQuery"
+        android:id="@+id/buttonScanQR"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/scan_qr_to_query_vehicle"
+        android:text="Scan QR Code"
         android:textSize="18sp"
-        android:padding="12dp"
+        android:padding="14dp"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white"
         android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/design_default_color_primary"
-        android:textColor="@android:color/white"/>
+        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+        app:cornerRadius="8dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/reported_stolen_vehicles"
+        android:text="Recently Reported Stolen Vehicles:"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp"
-        android:textColor="@android:color/black"/>
+        android:textColor="#333333"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewStolenVehicles"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:background="@drawable/rounded_box_background"
-        android:layout_marginBottom="16dp"/>
+        android:paddingBottom="8dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_stolen_vehicle"/>
 
     <Button
         android:id="@+id/buttonLogoutAuthority"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/logout"
         android:textSize="16sp"
-        android:padding="10dp"
-        android:backgroundTint="@android:color/holo_red_dark"
-        android:textColor="@android:color/white"/>
+        android:padding="12dp"
+        android:backgroundTint="@android:color/darker_gray"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="24dp"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        app:cornerRadius="8dp"/>
 
 </LinearLayout>

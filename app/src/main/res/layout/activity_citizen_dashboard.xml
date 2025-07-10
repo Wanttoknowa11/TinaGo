@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
     android:padding="16dp"
     tools:context=".CitizenDashboardActivity">
 
@@ -13,60 +12,72 @@
         android:id="@+id/welcomeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/welcome_citizen"
+        android:text="Welcome, Citizen!"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp"
-        android:textColor="@android:color/black"/>
-
-    <Button
-        android:id="@+id/buttonScanToReport"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/scan_qr_to_report"
-        android:textSize="18sp"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="@color/design_default_color_primary"
-        android:textColor="@android:color/white"/>
-
-    <Button
-        android:id="@+id/buttonRegisterNewVehicle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/register_new_vehicle"
-        android:textSize="18sp"
-        android:padding="12dp"
+        android:layout_gravity="center_horizontal"
         android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/design_default_color_primary_variant"
-        android:textColor="@android:color/white"/>
+        android:textColor="@color/black"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="24dp">
+
+        <Button
+            android:id="@+id/buttonRegisterNewVehicle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Register Vehicle"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/buttonScanToReport"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Scan to Report Theft"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="24dp">
+
+        <Button
+            android:id="@+id/buttonUserProfile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Profile"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/buttonLogoutCitizen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Logout"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/my_registered_vehicles"
+        android:text="Your Registered Vehicles:"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp"
-        android:textColor="@android:color/black"/>
+        android:textColor="@color/black"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCitizenVehicles"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"
-        android:background="@drawable/rounded_box_background"
-        android:layout_marginBottom="16dp"/>
-
-    <Button
-        android:id="@+id/buttonLogoutCitizen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/logout"
-        android:textSize="16sp"
-        android:padding="10dp"
-        android:backgroundTint="@android:color/holo_red_dark"
-        android:textColor="@android:color/white"/>
-
-</LinearLayout>
+        android:layout_height="match_parent"
+        tools:listitem="@layout/item_citizen_vehicle" /> </LinearLayout>

@@ -4,56 +4,69 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?android:attr/selectableItemBackground">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:id="@+id/linearLayout3">
+        android:padding="16dp">
 
         <TextView
-            android:id="@+id/textViewCitizenPlate"
-            android:layout_width="wrap_content"
+            android:id="@+id/textViewCitizenLicensePlate"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="License Plate: XYZ-123"
-            android:textSize="20sp"
+            android:text="License Plate: ABC-123"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"
-            tools:layout_conversion_absoluteHeight="27dp"
-            tools:layout_editor_absoluteY="16dp"
-            tools:layout_editor_absoluteX="16dp"
-            tools:layout_conversion_absoluteWidth="213dp" />
+            android:textColor="#333333"
+            android:layout_marginBottom="4dp"/>
 
         <TextView
             android:id="@+id/textViewCitizenMakeModel"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Make: Honda, Model: Civic"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
-            tools:layout_conversion_absoluteHeight="22dp"
-            tools:layout_editor_absoluteY="47dp"
-            tools:layout_editor_absoluteX="16dp"
-            tools:layout_conversion_absoluteWidth="187dp" />
+            android:text="Make: Toyota, Model: Camry"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="4dp"/>
 
         <TextView
             android:id="@+id/textViewCitizenStatus"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Status: Registered"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="#006400"
             tools:layout_conversion_absoluteHeight="19dp"
             tools:layout_editor_absoluteY="73dp"
             tools:layout_editor_absoluteX="16dp"
-            tools:layout_conversion_absoluteWidth="115dp" />
+            tools:layout_conversion_absoluteWidth="115dp"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/buttonViewDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Details"
+                android:textSize="14sp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:backgroundTint="@color/design_default_color_primary"
+                android:textColor="@android:color/white"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                app:cornerRadius="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

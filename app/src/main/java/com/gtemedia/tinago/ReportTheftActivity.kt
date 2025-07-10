@@ -10,126 +10,146 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class ReportTheftActivity : AppCompatActivity() {
 
-    private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
-    private lateinit var textViewLicensePlate: TextView
-    private lateinit var editTextTheftDate: EditText
+    private lateinit var db: FirebaseFirestore
+
+    private lateinit var textViewVehicleInfo: TextView
     private lateinit var editTextTheftLocation: EditText
+    private lateinit var editTextTheftDate: EditText
     private lateinit var editTextDescription: EditText
-    private lateinit var buttonFileReport: Button
+    private lateinit var buttonReportTheft: Button
     private lateinit var buttonCancelReport: Button
 
-    private var selectedTheftDate: Calendar? = null
-    private var scannedLicensePlate: String? = null
+    private var vehicleId: String? = null
+    private var licensePlate: String? = null
+
+    private val TAG = "ReportTheftActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_report_theft)
 
-        firestore = FirebaseFirestore.getInstance()
+        // Initialize Firebase
         auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
 
-        textViewLicensePlate = findViewById(R.id.textViewReportingLicensePlate)
-        editTextTheftDate = findViewById(R.id.editTextTheftDate)
+        // Get vehicle ID and license plate from intent
+        vehicleId = intent.getStringExtra("vehicleId")
+        licensePlate = intent.getStringExtra("licensePlate")
+
+        // Initialize UI elements
+        textViewVehicleInfo = findViewById(R.id.textViewVehicleInfo)
         editTextTheftLocation = findViewById(R.id.editTextTheftLocation)
+        editTextTheftDate = findViewById(R.id.editTextTheftDate)
         editTextDescription = findViewById(R.id.editTextDescription)
-        buttonFileReport = findViewById(R.id.buttonFileTheftReport)
+        buttonReportTheft = findViewById(R.id.buttonReportTheft)
         buttonCancelReport = findViewById(R.id.buttonCancelReport)
 
-        scannedLicensePlate = intent.getStringExtra("SCANNED_LICENSE_PLATE")
+        // Display vehicle info
+        textViewVehicleInfo.text = "Reporting theft for: ${licensePlate ?: "N/A"}"
 
-        if (scannedLicensePlate != null && scannedLicensePlate!!.isNotEmpty()) {
-            textViewLicensePlate.text = getString(R.string.reporting_theft_for_license_plate, scannedLicensePlate)
-        } else {
-            Toast.makeText(this, "Error: No license plate provided for theft report.", Toast.LENGTH_LONG).show()
-            finish() // Close activity if no license plate
-            return
-        }
-
+        // Set up DatePickerDialog for theft date
         editTextTheftDate.setOnClickListener {
             showDatePickerDialog()
         }
+        editTextTheftDate.keyListener = null // Make EditText not editable by keyboard
 
-        buttonFileReport.setOnClickListener {
+        buttonReportTheft.setOnClickListener {
             fileTheftReport()
         }
 
         buttonCancelReport.setOnClickListener {
-            finish() // Go back to CitizenDashboard
+            finish() // Close activity without reporting
         }
     }
 
+    /**
+     * Displays a DatePickerDialog for selecting the theft date.
+     */
     private fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        val datePickerDialog = DatePickerDialog(this,
-            { _, selectedYear, selectedMonth, selectedDayOfMonth ->
-                selectedTheftDate = Calendar.getInstance().apply {
-                    set(selectedYear, selectedMonth, selectedDayOfMonth)
-                }
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                editTextTheftDate.setText(dateFormat.format(selectedTheftDate!!.time))
-            }, year, month, day)
+        val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            val selectedDate = Calendar.getInstance()
+            selectedDate.set(selectedYear, selectedMonth, selectedDay)
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            editTextTheftDate.setText(dateFormat.format(selectedDate.time))
+        }, year, month, day)
 
-        // Optional: Set max date to today
-        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
 
+    /**
+     * Files the theft report by updating vehicle status and adding a new theft report document.
+     */
     private fun fileTheftReport() {
-        val licensePlate = scannedLicensePlate
-        val theftDate = editTextTheftDate.text.toString().trim()
         val theftLocation = editTextTheftLocation.text.toString().trim()
+        val theftDateString = editTextTheftDate.text.toString().trim()
         val description = editTextDescription.text.toString().trim()
-        val reporterUid = auth.currentUser?.uid
 
-        if (licensePlate == null || theftDate.isEmpty() || theftLocation.isEmpty() || description.isEmpty() || reporterUid == null) {
-            Toast.makeText(this, "Please fill all fields and ensure you are logged in.", Toast.LENGTH_LONG).show()
+        if (theftLocation.isEmpty() || theftDateString.isEmpty()) {
+            Toast.makeText(this, "Please enter theft location and date.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 1. Create a new theft report document
-        val theftReportData = hashMapOf(
-            "licensePlate" to licensePlate,
-            "reporterUid" to reporterUid,
-            "reportDate" to FieldValue.serverTimestamp(), // Use server timestamp
-            "theftDate" to theftDate, // As a string
-            "theftLocation" to theftLocation,
-            "description" to description,
-            "status" to "reported" // Initial status for a theft report
-        )
+        val theftDate: Date? = try {
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(theftDateString)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Invalid date format. Please use YYYY-MM-DD.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        firestore.collection("theft_reports")
-            .add(theftReportData)
+        if (vehicleId == null || auth.currentUser == null) {
+            Toast.makeText(this, "Error: Vehicle or user information missing.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userId = auth.currentUser!!.uid
+
+        // 1. Update vehicle status to "stolen"
+        val vehicleDocRef = db.collection("vehicles").document(vehicleId!!)
+        vehicleDocRef.update("currentStatus", "stolen")
             .addOnSuccessListener {
-                Log.d("ReportTheft", "Theft report added successfully.")
-                // 2. Update the vehicle's status to "reported_stolen"
-                firestore.collection("vehicles").document(licensePlate)
-                    .update("status", "reported_stolen")
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Vehicle reported stolen successfully!", Toast.LENGTH_LONG).show()
-                        Log.d("ReportTheft", "Vehicle status updated to reported_stolen.")
-                        finish() // Go back to CitizenDashboard
+                Log.d(TAG, "Vehicle status updated to stolen for ID: $vehicleId")
+
+                // 2. Add a new theft report document
+                val theftReport = hashMapOf(
+                    "vehicleId" to vehicleId,
+                    "reporterId" to userId,
+                    "theftDate" to theftDate,
+                    "theftLocation" to theftLocation,
+                    "description" to description,
+                    "reportDate" to Date(), // Timestamp of when the report was filed
+                    "isResolved" to false
+                )
+
+                db.collection("theft_reports")
+                    .add(theftReport)
+                    .addOnSuccessListener { documentReference ->
+                        Log.d(TAG, "Theft report added with ID: ${documentReference.id}")
+                        Toast.makeText(this, "Theft report filed successfully!", Toast.LENGTH_SHORT).show()
+                        finish() // Close activity after successful report
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(this, "Error updating vehicle status: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                        Log.e("ReportTheft", "Error updating vehicle status: ${e.localizedMessage}", e)
-                        // Consider deleting the theft report if vehicle status update fails
+                        Toast.makeText(this, "Error filing theft report: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        Log.e(TAG, "Error adding theft report: ${e.localizedMessage}", e)
+                        // Optionally, revert vehicle status if report saving fails
+                        vehicleDocRef.update("currentStatus", "registered")
                     }
             }
             .addOnFailureListener { e ->
-                Toast.makeText(this, "Error filing theft report: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                Log.e("ReportTheft", "Error adding theft report: ${e.localizedMessage}", e)
+                Toast.makeText(this, "Error updating vehicle status: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Log.e(TAG, "Error updating vehicle status to 'stolen': ${e.localizedMessage}", e)
             }
     }
 }

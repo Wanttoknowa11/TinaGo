@@ -1,162 +1,139 @@
 package com.gtemedia.tinago
 
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.*
+import android.util.Log
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
+import com.google.firebase.messaging.FirebaseMessaging
+import java.util.UUID
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var firestore: FirebaseFirestore
-    private lateinit var storageRef: StorageReference
-
-    private lateinit var fullNameEditText: EditText
-    private lateinit var emailEditText: EditText
-    private lateinit var passwordEditText: EditText
-    private lateinit var confirmPasswordEditText: EditText
-    private lateinit var registerButton: Button
-    private lateinit var backToLoginLink: TextView
-    private lateinit var profileImageView: ImageView
-    private lateinit var selectImageButton: Button
-
-    private var imageUri: Uri? = null
-
-    companion object {
-        private const val PICK_IMAGE_REQUEST = 1
-    }
+    private lateinit var db: FirebaseFirestore
+    private val tag = "RegisterActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
+        // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
-        firestore = FirebaseFirestore.getInstance()
-        storageRef = FirebaseStorage.getInstance().reference.child("profile_images")
+        db = FirebaseFirestore.getInstance()
 
-        // Views
-        fullNameEditText = findViewById(R.id.fullNameEditText)
-        emailEditText = findViewById(R.id.emailEditText)
-        passwordEditText = findViewById(R.id.passwordEditText)
-        confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
-        registerButton = findViewById(R.id.registerButton)
-        backToLoginLink = findViewById(R.id.backToLoginLink)
-        profileImageView = findViewById(R.id.profileImageView)
-        selectImageButton = findViewById(R.id.selectImageButton)
+        // Get references to UI elements
+        val editTextFullName = findViewById<EditText>(R.id.editTextFullName)
+        val editTextEmail = findViewById<EditText>(R.id.editTextEmail)
+        val editTextPassword = findViewById<EditText>(R.id.editTextPassword)
+        val editTextConfirmPassword = findViewById<EditText>(R.id.editTextConfirmPassword)
+        val buttonRegister = findViewById<Button>(R.id.buttonRegister)
+        val backToLoginLink = findViewById<TextView>(R.id.backToLoginLink)
 
-        // Image selection
-        selectImageButton.setOnClickListener {
-            openImagePicker()
-        }
+        // Set up register button click listener
+        buttonRegister.setOnClickListener {
+            val fullName = editTextFullName.text.toString().trim()
+            val email = editTextEmail.text.toString().trim()
+            val password = editTextPassword.text.toString().trim()
+            val confirmPassword = editTextConfirmPassword.text.toString().trim()
 
-        // Register logic
-        registerButton.setOnClickListener {
-            performRegistration()
-        }
-
-        backToLoginLink.setOnClickListener {
-            finish()
-        }
-    }
-
-    @SuppressLint("IntentReset")
-    private fun openImagePicker() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        intent.type = "image/*"
-        startActivityForResult(intent, PICK_IMAGE_REQUEST)
-    }
-
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            imageUri = data.data
-            Glide.with(this).load(imageUri).into(profileImageView)
-        }
-    }
-
-    private fun performRegistration() {
-        val fullName = fullNameEditText.text.toString().trim()
-        val email = emailEditText.text.toString().trim()
-        val password = passwordEditText.text.toString().trim()
-        val confirmPassword = confirmPasswordEditText.text.toString().trim()
-
-        if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (password != confirmPassword) {
-            Toast.makeText(this, "Passwords do not match.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (password.length < 6) {
-            Toast.makeText(this, "Password must be at least 6 characters.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    user?.let {
-                        if (imageUri != null) {
-                            uploadProfileImage(it.uid, fullName, email)
-                        } else {
-                            saveUserToFirestore(it.uid, fullName, email, null)
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "Registration failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                }
+            // Basic input validation
+            if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+                Toast.makeText(this, "Please fill in all fields.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-    }
 
-    private fun uploadProfileImage(uid: String, fullName: String, email: String) {
-        val fileRef = storageRef.child("$uid.jpg")
-        imageUri?.let {
-            fileRef.putFile(it)
-                .addOnSuccessListener {
-                    fileRef.downloadUrl.addOnSuccessListener { uri ->
-                        saveUserToFirestore(uid, fullName, email, uri.toString())
+            if (password.length < 6) {
+                Toast.makeText(this, "Password must be at least 6 characters long.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (password != confirmPassword) {
+                Toast.makeText(this, "Passwords do not match.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Create user with Firebase Authentication
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        // User registration success
+                        Log.d(tag, "createUserWithEmailAndPassword:success")
+                        val user = auth.currentUser
+                        user?.let { firebaseUser ->
+                            // Save user data to Firestore
+                            saveUserDataToFirestore(firebaseUser.uid, fullName, email)
+                        }
+                    } else {
+                        // If sign up fails, display a message to the user.
+                        Log.w(tag, "createUserWithEmailAndPassword:failure", task.exception)
+                        Toast.makeText(baseContext, "Registration failed: ${task.exception?.message}",
+                            Toast.LENGTH_SHORT).show()
                     }
                 }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "Image upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    saveUserToFirestore(uid, fullName, email, null) // Still save user
-                }
+        }
+
+        // Set up back to login link click listener
+        backToLoginLink.setOnClickListener {
+            finish() // Close RegisterActivity and return to previous (LoginActivity)
         }
     }
 
-    private fun saveUserToFirestore(uid: String, fullName: String, email: String, imageUrl: String?) {
-        val userMap = hashMapOf(
+    /**
+     * Saves user data to Firestore after successful Firebase Authentication registration.
+     * @param uid The Firebase User ID.
+     * @param fullName The full name of the user.
+     * @param email The email of the user.
+     */
+    private fun saveUserDataToFirestore(uid: String, fullName: String, email: String) {
+        // Default user type to "citizen" for new registrations
+        val user = hashMapOf(
             "fullName" to fullName,
             "email" to email,
-            "role" to "citizen",
-            "profileImageUrl" to imageUrl
+            "userType" to "citizen", // Default to citizen
+            "phoneNumber" to "", // Can be updated later in profile
+            "address" to "" // Can be updated later in profile
         )
 
-        firestore.collection("users").document(uid).set(userMap)
+        db.collection("users").document(uid)
+            .set(user)
             .addOnSuccessListener {
+                Log.d(tag, "User data successfully written to Firestore!")
                 Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
+
+                // Save FCM token for push notifications
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val token = task.result
+                        if (token != null) {
+                            db.collection("users").document(uid)
+                                .update("fcmToken", token)
+                                .addOnSuccessListener {
+                                    Log.d(tag, "FCM token saved successfully during registration.")
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w(tag, "Failed to save FCM token during registration.", e)
+                                }
+                        }
+                    } else {
+                        Log.w(tag, "Fetching FCM token failed during registration.", task.exception)
+                    }
+                }
+
+                // Redirect to Citizen Dashboard after successful registration and data saving
                 val intent = Intent(this, CitizenDashboardActivity::class.java)
-                intent.putExtra("FULL_NAME", fullName)
                 startActivity(intent)
-                finish()
+                finish() // Close RegisterActivity
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Failed to save user data: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.w(tag, "Error writing user document", e)
+                // Optionally, delete the Firebase Auth user if Firestore save fails
                 auth.currentUser?.delete()
             }
     }
