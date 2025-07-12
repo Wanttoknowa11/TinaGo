@@ -1,12 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") // Google Services plugin for Firebase
 }
 
 android {
     namespace = "com.gtemedia.tinago"
-    compileSdk = 35
+    compileSdk = 35 // Ensure this is consistent with targetSdk
 
     defaultConfig {
         applicationId = "com.gtemedia.tinago"
@@ -36,59 +36,66 @@ android {
     }
 }
 
-
 dependencies {
-    implementation (libs.androidx.cardview)
+    // AndroidX and Material Design UI components
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(libs.material) // Material Design components (for TextInputLayout, Buttons, etc.)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.cardview) // For CardView in item_citizen_vehicle and item_stolen_vehicle
+
+    // Testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    // Add the Firebase BoM (Bill of Materials) - recommended way to manage Firebase versions
-    implementation(platform(libs.firebase.bom)) // Check for latest version
-    // Add the Firebase SDK for Google Analytics (recommended)
-    implementation(libs.firebase.analytics)
-    // Add the Firebase SDK for Authentication (essential for login)
-    implementation(libs.firebase.auth.ktx)
-    // Add the Firebase SDK for Fire_store (for database interactions)
-    implementation(libs.firebase.firestore.ktx)
-    // Add the Firebase SDK for Cloud Messaging (for push notifications)
-    implementation(libs.firebase.messaging.ktx)
-    // Add the Firebase SDK for Storage (if you need to store images/files)
-    implementation(libs.firebase.storage.ktx)
 
-    implementation (libs.circleimageview)
+    // Firebase Platform (Bill of Materials) - recommended for managing Firebase versions
+    // Use only one Firebase BOM. The 'v3300' seems to be a specific version alias.
+    // It's best to use the most up-to-date stable BOM.
+    implementation(platform(libs.firebase.bom)) // Keep this, assuming 'libs.firebase.bom' points to the latest stable BOM
 
-    implementation(platform(libs.firebase.bom.v3300)) // Use the latest BOM version
-    implementation(libs.google.firebase.messaging.ktx) // For Kotlin extensions
+    // Firebase SDKs
+    implementation(libs.firebase.analytics) // For Firebase Analytics (optional, but good for insights)
+    implementation(libs.firebase.auth.ktx) // Firebase Authentication with Kotlin extensions
+    implementation(libs.firebase.firestore.ktx) // Firestore Database with Kotlin extensions
+    implementation(libs.firebase.messaging.ktx) // Firebase Cloud Messaging with Kotlin extensions
+    implementation(libs.firebase.storage.ktx) // Firebase Storage with Kotlin extensions (for images/files)
 
     // ZXing Android Embedded (for QR Code Scanning)
+    // Only one implementation needed. 'libs.zxing.android.embedded' should be sufficient.
     implementation(libs.zxing.android.embedded)
-    implementation(libs.core) // Make sure to use a compatible core version
+    // com.google.zxing:core is a transitive dependency of zxing-android-embedded,
+    // so it's usually not necessary to declare it explicitly unless you need a specific version.
+    // If you encounter issues, you might need to add it with a specific version.
+    // implementation(libs.core)
 
-    implementation (libs.zxing.android.embedded)
-    // Add other necessary libraries for networking (Retrofit) and JSON serialization
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson) // Or converter-kotlinx-serialization
-    implementation(libs.gson) // Or kotlinx-serialization for JSON
+    // Image Loading Library (Glide)
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler) // Annotation processor for Glide
 
-    // For modern Android UI development (Jetpack Compose)
-// If you chose Empty Activity, it might already have some compose dependencies
-// If not, add them:
-    implementation(platform(libs.androidx.compose.bom)) // Check latest compose BOM
-    implementation(libs.androidx.ui)
-implementation(libs.androidx.ui.graphics)
-implementation(libs.androidx.ui.tooling.preview)
-implementation(libs.androidx.material3)
-debugImplementation(libs.androidx.ui.tooling)
-debugImplementation(libs.androidx.ui.test.manifest)
-implementation(libs.androidx.lifecycle.runtime.ktx)
-implementation(libs.androidx.activity.compose)
-    implementation (libs.imageslideshow)
-    implementation (libs.glide)
-    annotationProcessor (libs.compiler)
+    // CircleImageView (for circular image views, if used)
+    implementation(libs.circleimageview)
 
+    // Image Slideshow (if used, not directly seen in provided layouts but kept if planned)
+    implementation(libs.imageslideshow)
+
+    // Removed Jetpack Compose dependencies as your project uses View-based (XML) UI
+    // If you plan to use Compose, these would be needed, but they are unnecessary for XML-based UI.
+    // implementation(platform(libs.androidx.compose.bom))
+    // implementation(libs.androidx.ui)
+    // implementation(libs.androidx.ui.graphics)
+    // implementation(libs.androidx.ui.tooling.preview)
+    // implementation(libs.androidx.material3)
+    // debugImplementation(libs.androidx.ui.tooling)
+    // debugImplementation(libs.androidx.ui.test.manifest)
+    // implementation(libs.androidx.lifecycle.runtime.ktx)
+    // implementation(libs.androidx.activity.compose)
+
+    // Removed Retrofit, Gson, Converter-Gson as they are not explicitly used by Firebase
+    // and your current Kotlin files don't show external API calls.
+    // If you later integrate external APIs (e.g., OpenALPR), you'll need to re-add these.
+    // implementation(libs.retrofit)
+    // implementation(libs.converter.gson)
+    // implementation(libs.gson)
 }

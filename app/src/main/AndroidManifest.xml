@@ -2,12 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissions required for the application -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <!-- For Firebase Cloud Messaging, if targeting Android 12 (API 31) or higher -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Feature declaration for camera hardware, indicating it's required -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -22,19 +26,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TinaGo"
         tools:targetApi="31">
+
+        <!-- MainActivity: The primary entry point of the application -->
         <activity
-            android:name=".UserProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LoginActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- LoginActivity: Handles user login -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
+        <!-- UserProfileActivity: Allows users to view and edit their profile -->
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+
+        <!-- Firebase Messaging Service: For handling push notifications -->
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">
@@ -43,6 +56,7 @@
             </intent-filter>
         </service>
 
+        <!-- Metadata for default notification icon and color for FCM -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification" />
@@ -50,30 +64,44 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/white" />
 
+        <!-- RegisterActivity: Handles new user registration -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+
+        <!-- CitizenDashboardActivity: Dashboard for regular citizens -->
         <activity
             android:name=".CitizenDashboardActivity"
             android:exported="false" />
+
+        <!-- AuthorityDashboardActivity: Dashboard for authority users -->
         <activity
             android:name=".AuthorityDashboardActivity"
             android:exported="false" />
+
+        <!-- RegisterVehicleActivity: Allows citizens to register new vehicles -->
         <activity
             android:name=".RegisterVehicleActivity"
             android:exported="false" />
+
+        <!-- QrScannerActivity: Handles QR code scanning -->
         <activity
             android:name=".QrScannerActivity"
             android:exported="false"
             android:screenOrientation="fullSensor"
             android:stateNotNeeded="true"
             tools:ignore="DiscouragedApi,LockedOrientationActivity" />
+
+        <!-- ReportTheftActivity: Allows users to report vehicle theft -->
         <activity
             android:name=".ReportTheftActivity"
             android:exported="false" />
+
+        <!-- VehicleDetailsActivity: Displays detailed information about a vehicle -->
         <activity
             android:name=".VehicleDetailsActivity"
             android:exported="false" />
+
     </application>
 
 </manifest>

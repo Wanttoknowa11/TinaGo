@@ -10,6 +10,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Date
 import java.util.Locale
+import com.gtemedia.tinago.Vehicle
+
 
 class CitizenVehiclesAdapter(private val vehicles: MutableList<Vehicle>) :
     RecyclerView.Adapter<CitizenVehiclesAdapter.CitizenVehicleViewHolder>() {
@@ -55,28 +57,10 @@ class CitizenVehiclesAdapter(private val vehicles: MutableList<Vehicle>) :
      * Updates the list of vehicles in the adapter and notifies the RecyclerView of the change.
      * @param newVehicles The new list of vehicles.
      */
-    fun updateData(newVehicles: List<Vehicle>) {
+    fun updateData(newVehicles: MutableList<Vehicle>) {
         vehicles.clear()
         vehicles.addAll(newVehicles)
         notifyDataSetChanged()
     }
 
-    // Data class to represent a Vehicle (for Firestore mapping)
-    // This should ideally be in a separate file or a common data model package
-    data class Vehicle(
-        val id: String = "", // Document ID from Firestore
-        val ownerId: String = "",
-        val licensePlate: String = "",
-        val vin: String = "",
-        val make: String = "",
-        val model: String = "",
-        val type: String = "",
-        val registrationDate: Date? = null,
-        var currentStatus: String = "registered",
-        val imageUrl: String? = null,
-        val qrCodeUrl: String? = null
-    ) {
-        // No-argument constructor required for Firestore deserialization
-        constructor() : this("", "", "", "", "", "", "", null, "registered", null, null)
-    }
 }

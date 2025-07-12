@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Standard Material Design Colors (you can customize these) -->
+    <color name="design_default_color_primary">#6200EE</color>
+    <color name="design_default_color_primary_dark">#3700B3</color>
+    <color name="design_default_color_secondary">#03DAC6</color>
+    <color name="design_default_color_secondary_variant">#018786</color>
+    <color name="design_default_color_error">#B00020</color>
+    <color name="design_default_color_on_primary">#FFFFFF</color>
+    <color name="design_default_color_on_secondary">#000000</color>
+    <color name="design_default_color_on_error">#FFFFFF</color>
+
+<!--     Other colors used in your layouts -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- ZXing specific colors -->
+    <color name="zxing_transparent">#00000000</color>
+    <color name="zxing_viewfinder_mask">#60000000</color>
+    <color name="zxing_possible_result_points_color">#C0FFBD21</color>
+    <color name="zxing_result_view">#B0000000</color>
+    <color name="zxing_viewfinder_laser">#FFCC00</color>
+
+    <!-- Custom colors for your app -->
+    <color name="dark_green">#006400</color>
 </resources>

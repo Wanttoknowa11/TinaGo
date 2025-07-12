@@ -12,7 +12,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.util.Date
-import java.util.Locale
 
 class CitizenDashboardActivity : AppCompatActivity() {
 
@@ -34,8 +33,8 @@ class CitizenDashboardActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
 
         // Initialize UI elements
-        val buttonRegisterVehicle = findViewById<Button>(R.id.buttonRegisterVehicle)
-        val buttonScanQR = findViewById<Button>(R.id.buttonScanQR)
+        val buttonRegisterVehicle = findViewById<Button>(R.id.buttonRegisterNewVehicle)
+        val buttonScanQR = findViewById<Button>(R.id.buttonScanToReport)
         val buttonUserProfile = findViewById<Button>(R.id.buttonUserProfile)
         recyclerViewCitizenVehicles = findViewById(R.id.recyclerViewCitizenVehicles)
 
@@ -120,22 +119,5 @@ class CitizenDashboardActivity : AppCompatActivity() {
             }
     }
 
-    // Data class to represent a Vehicle (for Firestore mapping)
-    // This should ideally be in a separate file or a common data model package
-    data class Vehicle(
-        val id: String = "", // Document ID from Firestore
-        val ownerId: String = "",
-        val licensePlate: String = "",
-        val vin: String = "",
-        val make: String = "",
-        val model: String = "",
-        val type: String = "",
-        val registrationDate: Date? = null,
-        var currentStatus: String = "registered",
-        val imageUrl: String? = null,
-        val qrCodeUrl: String? = null
-    ) {
-        // No-argument constructor required for Firestore deserialization
-        constructor() : this("", "", "", "", "", "", "", null, "registered", null, null)
-    }
+
 }

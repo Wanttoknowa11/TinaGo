@@ -13,12 +13,13 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.firestore.FirebaseFirestore
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
-import com.journeyapps.barcodescanner.CompoundBarcodeView
+import com.journeyapps.barcodescanner.BarcodeView // Corrected import
 
 class QrScannerActivity : AppCompatActivity() {
 
-    private lateinit var barcodeView: CompoundBarcodeView
+    private lateinit var barcodeView: BarcodeView
     private lateinit var firestore: FirebaseFirestore
+    private var isTorchActive: Boolean = false // Track torch state locally
 
     private val CAMERA_PERMISSION_REQUEST_CODE = 100
     private val TAG = "QrScannerActivity"
@@ -47,7 +48,7 @@ class QrScannerActivity : AppCompatActivity() {
         // Switch to the custom barcode scanner layout
         setContentView(R.layout.custom_barcode_scanner_layout)
 
-        barcodeView = findViewById(R.id.zxing_barcode_surface)
+        barcodeView = findViewById<BarcodeView>(R.id.zxing_barcode_surface)
         val flashButton = findViewById<Button>(R.id.buttonFlash)
 
         // Set up barcode decoder callbacks
@@ -70,11 +71,13 @@ class QrScannerActivity : AppCompatActivity() {
 
         // Set up flash button listener
         flashButton.setOnClickListener {
-            if (barcodeView.barcodeView.isTorchOn) {
-                barcodeView.barcodeView.setTorchOff()
+            if (isTorchActive) { // Use the local state to check if torch is on
+                barcodeView.setTorch(false) // Turn torch off
+                isTorchActive = false // Update local state
                 flashButton.text = "Flash On"
             } else {
-                barcodeView.barcodeView.setTorchOn()
+                barcodeView.setTorch(true) // Turn torch on
+                isTorchActive = true // Update local state
                 flashButton.text = "Flash Off"
             }
         }
@@ -118,11 +121,19 @@ class QrScannerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         barcodeView.resume() // Resume scanning when activity is resumed
+        // Ensure torch state is reset when resuming, or re-apply if needed
+        if (isTorchActive) {
+            barcodeView.setTorch(true)
+        }
     }
 
     override fun onPause() {
         super.onPause()
         barcodeView.pause() // Pause scanning when activity is paused
+        // Turn off torch when pausing to save battery
+        if (isTorchActive) {
+            barcodeView.setTorch(false)
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

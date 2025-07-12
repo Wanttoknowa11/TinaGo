@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class StolenVehiclesAdapter(private val vehicles: MutableList<Vehicle>) :
+class StolenVehiclesAdapter(private val vehicles: MutableList<AuthorityDashboardActivity.Vehicle>) :
     RecyclerView.Adapter<StolenVehiclesAdapter.StolenVehicleViewHolder>() {
 
     class StolenVehicleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -53,7 +53,7 @@ class StolenVehiclesAdapter(private val vehicles: MutableList<Vehicle>) :
      * Updates the list of vehicles in the adapter and notifies the RecyclerView of the change.
      * @param newVehicles The new list of stolen vehicles.
      */
-    fun updateData(newVehicles: List<Vehicle>) {
+    fun updateData(newVehicles: MutableList<AuthorityDashboardActivity.Vehicle>) {
         vehicles.clear()
         vehicles.addAll(newVehicles)
         notifyDataSetChanged()
